@@ -38,7 +38,7 @@ def const_trainer_train(config, seed, args):
 
     checkpoint_callback = ModelSaver(limit_num=10,
                                      monitor=None,
-                                     filepath=os.path.join(
+                                     dirpath=os.path.join(
                                          save_dir_path, 'ckpt-{epoch:04d}-{total_loss:.2f}'),
                                      save_top_k=-1)
 

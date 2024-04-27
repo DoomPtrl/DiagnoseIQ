@@ -8,6 +8,7 @@ import torch
 import cv2
 import matplotlib.pyplot as plt
 from multiprocessing import Pool
+from skimage.transform import resize
 
 
 IMAGE_SIZE = 256
@@ -47,7 +48,7 @@ test_dataset_config = {
         {'name': 'T1CE', 'pattern': 't1ce', 'save_pattern': 't1ce'},
         {'name': 'T2', 'pattern': 't2', 'save_pattern': 't2'},
         {'name': 'FLAIR', 'pattern': 'flair', 'save_pattern': 'flair'},
-        {'name': 'SEG', 'pattern': 'output', 'save_pattern': 'seg'},
+        {'name': 'SEG', 'pattern': 'seg', 'save_pattern': 'seg'},
     ],
 }
 
@@ -60,7 +61,7 @@ val_dataset_config = {
         {'name': 'T1CE', 'pattern': 't1ce', 'save_pattern': 't1ce'},
         {'name': 'T2', 'pattern': 't2', 'save_pattern': 't2'},
         {'name': 'FLAIR', 'pattern': 'flair', 'save_pattern': 'flair'},
-        {'name': 'SEG', 'pattern': 'output', 'save_pattern': 'seg'},
+        {'name': 'SEG', 'pattern': 'seg', 'save_pattern': 'seg'},
     ],
 }
 
@@ -84,10 +85,10 @@ def preprocess(config, patient_id):
     for modality in config['modalities']:
         file_path = os.path.join(
             patient_dir_path,
-            patient_id + '_' + modality['pattern'] + '.nii.gz'
+            patient_id + '_' + modality['pattern'] + '.nii'
         )
         nii_file = nib.load(file_path)
-        series = nii_file.get_data()
+        series = nii_file.get_fdata()
 
         if modality['name'] == 'SEG':
             series = series.astype(np.int32)
@@ -111,11 +112,18 @@ def preprocess(config, patient_id):
             slice = np.rot90(slice, k=3)
 
             if modality['name'] == 'SEG':
-                slice = scipy.misc.imresize(
+                # slice = scipy.misc.imresize(
+                #     slice.astype(np.uint8),
+                #     (IMAGE_SIZE, IMAGE_SIZE),
+                #     interp='nearest',
+                #     mode='L',
+                # )
+                slice = resize(
                     slice.astype(np.uint8),
                     (IMAGE_SIZE, IMAGE_SIZE),
-                    interp='nearest',
-                    mode='L',
+                    mode='constant',
+                    anti_aliasing=False,
+                    preserve_range=True,
                 )
             else:
                 slice = cv2.resize(slice, (IMAGE_SIZE, IMAGE_SIZE))

@@ -11,7 +11,7 @@ from typing import Tuple
 import torch
 from torchvision.utils import save_image
 from pytorch_lightning.utilities import rank_zero_only
-from pytorch_lightning.loggers import LightningLoggerBase
+from pytorch_lightning.loggers import Logger
 from pytorch_lightning.callbacks import ModelCheckpoint
 
 
@@ -88,7 +88,7 @@ class ModelSaver(ModelCheckpoint):
                     self._del_model(model_path)
 
 
-class Logger(LightningLoggerBase):
+class Logger(Logger):
 
     def __init__(self,
                  save_dir: str,
